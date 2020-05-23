@@ -125,30 +125,112 @@ int main(int argc, char** argv)
     // ...
     // Exemplo: copia apenas o componente vermelho para a saida
 
-    //Generating random numbers
-    /* int numSeeds = 1000;
-    //int sementes[numSeeds][height][width];
-    //char sementes[numSeeds][8];
-    Pixel sementes[numSeeds];
-    int i;
-    for(i=0; i<numSeeds; i++)
+
+
+    //MELHORAMENTO DAS SEMENTES:
+    // - Guarda as cores do IN no OUT e transforma elas pra grayscale
+    for(int y=0; y<height; y++)
     {
-    int upperH = height;
-    int lowerH = 0;
-    int seedH = (rand() % (upperH - lowerH + 1)) + lowerH;
-    int upperW = width;
-    int lowerW = 0;
-    int seedW = (rand() % (upperW - lowerW + 1)) + lowerW;
-    out[seedH][seedW].r = in[seedH][seedW].r;
-    out[seedH][seedW].g = in[seedH][seedW].g;
-    out[seedH][seedW].b = in[seedH][seedW].b;
-    sementes[i] = out[seedH][seedW];
+        for(int x=0; x<width; x++)
+        {
+            out[y][x].r = in[y][x].r;
+            out[y][x].g = in[y][x].g;
+            out[y][x].b = in[y][x].b;
+
+            //( (0.3 * R) + (0.59 * G) + (0.11 * B) )
+            in[y][x].r = (0.3 * in[y][x].r + 0.59 * in[y][x].g + 0.11 * in[y][x].b);
+            in[y][x].g = (0.3 * in[y][x].r + 0.59 * in[y][x].g + 0.11 * in[y][x].b);
+            in[y][x].b = (0.3 * in[y][x].r + 0.59 * in[y][x].g + 0.11 * in[y][x].b);
+        }
     }
 
-    */
+    //Cria as matrizes que percorrerão a imagem buscando as bordas.
+    int olhoV[3][3] ={{ -1, 0, 1},
+                     { -2, 0, 2},
+                     { -1, 0, 1} };
+
+    int olhoH[3][3] ={{ -1, -2, -1},
+                     { 0, 0, 0},
+                     { 1, 2, 1} };
+
+    //Algoritmo de encontrar sementes. Ele usa as matrizes cridas e compara. Caso o resultado não for zero
+    //Adiciona aquela linha de pixels para a matriz "booleana" de Not Seeds
+    //ou seja, ao gerarmos as sementes, elas não poderão ter a altura e largura dos pixels aqui marcados (bordas)
+    int soma = 0;
+    int notSeed[height][width];
+    int l = 0;
+    for(int y=0; y<height; y=y+3)
+    {
+        for(int x=0; x<width; x=x+3)
+        {
+            soma = 0;
+            int mediaFirst = (in[y][x].r + in[y][x].g + in[y][x].b)/3;
+            int mediaSec = (in[y+1][x].r + in[y][x].g + in[y][x].b)/3;
+            int mediaT = (in[y+2][x].r + in[y][x].g + in[y][x].b)/3;
+
+            int mediaForth = (in[y][x+2].r + in[y][x].g + in[y][x].b)/3;
+            int mediaFifth = (in[y+1][x+2].r + in[y][x].g + in[y][x].b)/3;
+            int mediaSix = (in[y+2][x+2].r + in[y][x].g + in[y][x].b)/3;
+
+            soma = soma + mediaFirst * olhoV[0][0];
+            soma = soma + mediaSec * olhoV[0][1];
+            soma = soma + mediaT * olhoV[0][2];
+
+            soma = soma + mediaForth * olhoV[2][0];
+            soma = soma + mediaFifth * olhoV[2][1];
+            soma = soma + mediaSix * olhoV[2][2];
+            if(soma != 0){
+                notSeed[y+1][x+1] = 1;
+                notSeed[y][x+1] = 1;
+                notSeed[y+2][x+1] = 1;
+            }
+
+        }
+    }
+
+    //Aqui é a parte dois, encontrando bordas na horizontal
+    for(int y=0; y<height; y=y+3)
+    {
+        for(int x=0; x<width; x=x+3)
+        {
+            soma = 0;
+            int mediaFirst = (in[y][x].r + in[y][x].g + in[y][x].b)/3;
+            int mediaSec = (in[y][x+1].r + in[y][x].g + in[y][x].b)/3;
+            int mediaT = (in[y][x+2].r + in[y][x].g + in[y][x].b)/3;
+
+            int mediaForth = (in[y+2][x].r + in[y][x].g + in[y][x].b)/3;
+            int mediaFifth = (in[y+2][x+1].r + in[y][x].g + in[y][x].b)/3;
+            int mediaSix = (in[y+2][x+2].r + in[y][x].g + in[y][x].b)/3;
+
+            soma = soma + mediaFirst * olhoH[0][0];
+            soma = soma + mediaSec * olhoH[0][1];
+            soma = soma + mediaT * olhoH[0][2];
+
+            soma = soma + mediaForth * olhoH[2][0];
+            soma = soma + mediaFifth * olhoH[2][1];
+            soma = soma + mediaSix * olhoH[2][2];
+            if(soma != 0){
+                notSeed[y+1][x] = 1;
+                notSeed[y+1][x+1] = 1;
+                notSeed[y+1][x+2] = 1;
+            }
+
+        }
+    }
+
+    //Devolvemos a cor original para a imagem para seguirmos com o algoritmo
+    for(int y=0; y<height; y++)
+    {
+        for(int x=0; x<width; x++)
+        {
+            in[y][x].r = out[y][x].r;
+            in[y][x].g = out[y][x].g;
+            in[y][x].b = out[y][x].b;
+        }
+    }
 
     //Generating random numbers
-    int numSeeds = 7000; //após o número 1163, começa a dar erro e a imagem não é gerada (não sei pq)
+    int numSeeds = 7000;
     int matriz[numSeeds][2];
     Pixel sementes[numSeeds];
     int i;
@@ -159,16 +241,19 @@ int main(int argc, char** argv)
     {
         int seedW =0;
         int seedH = 0;
-
-        //upper e lower setados para nunca pegar sementes nas bordas da imagem
-        int upperH = height-1;
-        int lowerH = 1;
-        seedH = (rand() % (upperH - lowerH )) + lowerH;
-        //upper e lower setados para nunca pegar sementes nas bordas da imagem
-        int upperW = width-1;
-        int lowerW = 1;
-        seedW = (rand() % (upperW - lowerW + 1)) + lowerW;
-
+        while(1){
+            //upper e lower setados para nunca pegar sementes nas bordas da imagem
+            int upperH = height-1;
+            int lowerH = 1;
+            seedH = (rand() % (upperH - lowerH )) + lowerH;
+            //upper e lower setados para nunca pegar sementes nas bordas da imagem
+            int upperW = width-1;
+            int lowerW = 1;
+            seedW = (rand() % (upperW - lowerW + 1)) + lowerW;
+            if(notSeed[seedH][seedW]==0){
+                break;
+            }
+        }
 
         printf("%d", i);
         printf("%s", " - Width: ");

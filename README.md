@@ -36,4 +36,4 @@ The only result obtained by the code is that of the last image.
 ![Stylization process using the implemented algorithm.](https://mflash.github.io/progswb2/trab/t1-201-jhhe4udhv7/muitasfacins.jpg)
 
 
-By: [luizeduardomr](https://github.com/luizeduardomr) & [LeoMello07](https://github.com/LeoMello07)
+By: [luizeduardomr](https://github.com/luizeduardomr) & [LucasGCardoso](https://github.com/LucasGCardoso)

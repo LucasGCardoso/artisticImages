@@ -22,7 +22,7 @@ See below how different colors are represented in this format - each color is ex
 - For each pixel of the input image (x, y), the closest seed is found, that is, the one whose distance is the shortest to it. To calculate the distance, you can use the Euclidean distance formula:
 
 ```
-dist= √((x−xs)^2+(y−ys)^2)
+dist= √((x−xs)²+(y−ys)²)
 ```
 
 - In the output image, the color representative of the region in the current pixel is then stored.
